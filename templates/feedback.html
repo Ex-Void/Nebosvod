@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Обратная связь{% endblock %}
+{% block sky %}clear{% endblock %}
+{% block content %}
+<section class="page-head reveal">
+  <h1>Обратная связь</h1>
+  <p class="muted">Предложите новый город, сообщите об ошибке или просто напишите нам — сообщение попадёт в базу данных и будет видно администратору.</p>
+</section>
+
+<div class="two-col">
+  <section class="glass form-card reveal">
+    {% if sent %}
+    <div class="sent">
+      <svg viewBox="0 0 52 52" class="check"><circle cx="26" cy="26" r="24"/><path d="M14 27 l8 8 l16 -17"/></svg>
+      <h2>Сообщение отправлено!</h2>
+      <p class="muted">Спасибо, администратор его прочитает.</p>
+      <a class="btn" href="{{ url_for('feedback_page') }}">Написать ещё</a>
+    </div>
+    {% else %}
+    <form method="post" novalidate class="form" data-validate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field {{ 'has-error' if errors.name }}">
+        <input id="f-name" name="name" value="{{ form.name }}" placeholder=" " required minlength="2" maxlength="80">
+        <label for="f-name">Ваше имя</label>
+        <span class="field-error">{{ errors.name }}</span>
+      </div>
+      <div class="field {{ 'has-error' if errors.email }}">
+        <input id="f-email" name="email" type="email" value="{{ form.email }}" placeholder=" " required maxlength="120">
+        <label for="f-email">E-mail</label>
+        <span class="field-error">{{ errors.email }}</span>
+      </div>
+      <div class="field {{ 'has-error' if errors.message }}">
+        <textarea id="f-msg" name="message" rows="5" placeholder=" " required minlength="5" maxlength="2000">{{ form.message }}</textarea>
+        <label for="f-msg">Сообщение</label>
+        <span class="field-error">{{ errors.message }}</span>
+        <span class="counter small muted" data-counter-for="f-msg">0 / 2000</span>
+      </div>
+      <button class="btn btn-primary" type="submit">Отправить</button>
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="glass about reveal">
+    <h2>О проекте</h2>
+    <p>«Небосвод» — сайт прогноза погоды с собственной базой данных. Данные о погоде хранятся в SQLite, а администратор управляет ими через панель управления.</p>
+    <ul class="facts">
+      <li><b data-count="{{ stats.cities }}">{{ stats.cities }}</b><span>городов в базе</span></li>
+      <li><b data-count="{{ stats.forecasts }}">{{ stats.forecasts }}</b><span>записей прогноза</span></li>
+      <li><b>7</b><span>дней прогноза</span></li>
+    </ul>
+    <h3>Технологии</h3>
+    <div class="tags"><span>Python</span><span>Flask</span><span>SQLite</span><span>Jinja2</span><span>HTML / CSS</span><span>JavaScript</span><span>Canvas</span><span>Open-Meteo API</span></div>
+  </section>
+</div>
+{% endblock %}

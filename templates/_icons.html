@@ -1,0 +1,65 @@
+{# Анимированные SVG-иконки погоды. icon(condition, size) #}
+{% macro _cloud(x=0, y=0, cls="wi-cloud", fill="var(--cloud)") -%}
+<g class="{{ cls }}" transform="translate({{ x }} {{ y }})">
+  <g fill="{{ fill }}">
+    <circle cx="22" cy="37" r="9"/><circle cx="33" cy="30" r="12.5"/><circle cx="45" cy="37" r="8.5"/>
+    <rect x="22" y="33" width="23" height="12.5" rx="2"/>
+  </g>
+</g>
+{%- endmacro %}
+
+{% macro _sun(cx=32, cy=32, r=10, scale=1) -%}
+<g class="wi-sunwrap" transform="translate({{ cx }} {{ cy }}) scale({{ scale }})">
+  <g class="wi-sun">
+    <g class="wi-rays" stroke="var(--sun)" stroke-width="3" stroke-linecap="round">
+      {% for a in range(0, 360, 45) %}<line x1="0" y1="-{{ r + 5 }}" x2="0" y2="-{{ r + 10 }}" transform="rotate({{ a }})"/>{% endfor %}
+    </g>
+    <circle r="{{ r }}" fill="var(--sun)"/>
+  </g>
+  <g class="wi-moon"><path d="M4-11a12 12 0 1 0 8 15 10 10 0 0 1-8-15z" fill="var(--moon)" transform="translate(-4 2)"/></g>
+</g>
+{%- endmacro %}
+
+{% macro icon(condition, size=64, cls="") -%}
+<svg class="wi wi-{{ condition }} {{ cls }}" viewBox="0 0 64 64" width="{{ size }}" height="{{ size }}" role="img" aria-label="{{ CONDITIONS.get(condition, condition) }}">
+{%- if condition == "clear" -%}
+  {{ _sun(32, 32, 11) }}
+{%- elif condition == "partly" -%}
+  {{ _sun(24, 24, 8, 1) }}
+  {{ _cloud(4, 6) }}
+{%- elif condition == "cloudy" -%}
+  {{ _cloud(-9, -6, "wi-cloud wi-cloud-back", "var(--cloud-dark)") }}
+  {{ _cloud(4, 4) }}
+{%- elif condition == "fog" -%}
+  {{ _cloud(0, -4) }}
+  <g stroke="var(--cloud)" stroke-width="3" stroke-linecap="round">
+    <line class="wi-fogline" x1="14" y1="48" x2="44" y2="48"/>
+    <line class="wi-fogline d2" x1="20" y1="54" x2="50" y2="54"/>
+    <line class="wi-fogline d3" x1="12" y1="60" x2="36" y2="60"/>
+  </g>
+{%- elif condition == "rain" -%}
+  <g stroke="var(--rain)" stroke-width="2.6" stroke-linecap="round">
+    <line class="wi-drop" x1="24" y1="44" x2="22" y2="50"/>
+    <line class="wi-drop d2" x1="33" y1="44" x2="31" y2="50"/>
+    <line class="wi-drop d3" x1="42" y1="44" x2="40" y2="50"/>
+  </g>
+  {{ _cloud(0, -6) }}
+{%- elif condition == "snow" -%}
+  <g fill="var(--snow)">
+    <circle class="wi-flake" cx="23" cy="46" r="2.4"/>
+    <circle class="wi-flake d2" cx="33" cy="46" r="2.4"/>
+    <circle class="wi-flake d3" cx="43" cy="46" r="2.4"/>
+  </g>
+  {{ _cloud(0, -6) }}
+{%- elif condition == "storm" -%}
+  <g stroke="var(--rain)" stroke-width="2.6" stroke-linecap="round">
+    <line class="wi-drop" x1="22" y1="44" x2="20" y2="50"/>
+    <line class="wi-drop d3" x1="44" y1="44" x2="42" y2="50"/>
+  </g>
+  <path class="wi-bolt" d="M34 38 l-6 11 h6 l-3 10 l10-14 h-6 l4-7z" fill="var(--sun)"/>
+  {{ _cloud(0, -6, "wi-cloud", "var(--cloud-dark)") }}
+{%- else -%}
+  {{ _cloud(0, 0) }}
+{%- endif -%}
+</svg>
+{%- endmacro %}

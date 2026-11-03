@@ -1,0 +1,52 @@
+{% extends "admin/layout.html" %}
+{% block title %}Города{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>Города</h1>
+  <div class="actions">
+    <form method="get" class="inline-search">
+      <input type="search" name="q" value="{{ q }}" placeholder="Поиск по названию">
+    </form>
+    <a class="btn btn-primary" href="{{ url_for('admin_city_form') }}">+ Добавить город</a>
+  </div>
+</div>
+<section class="glass panel reveal">
+  <div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>ID</th><th>Город</th><th>Координаты</th><th>Сейчас</th><th>Прогнозов</th><th>На сайте</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="stagger" style="--i: {{ loop.index0 }}">
+        <td class="muted">{{ r.id }}</td>
+        <td><b>{{ r.name }}</b><br><span class="muted small">{{ r.country }}</span></td>
+        <td class="small">{{ "%.4f"|format(r.latitude) }}, {{ "%.4f"|format(r.longitude) }}</td>
+        <td>{% if r.temperature is not none %}<span class="cell-icon">{{ icon(r.condition, 28) }}</span> {{ r.temperature|temp }}{% else %}—{% endif %}</td>
+        <td>{{ r.fc_count }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin_city_toggle', city_id=r.id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="switch {{ 'on' if r.is_active }}" type="submit" title="Показать / скрыть на сайте"><span></span></button>
+          </form>
+        </td>
+        <td class="row-actions">
+          <form method="post" action="{{ url_for('admin_refresh') }}" data-loading>
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="city_id" value="{{ r.id }}">
+            <input type="hidden" name="back" value="{{ url_for('admin_cities') }}">
+            <button class="btn btn-sm btn-ghost" type="submit" title="Загрузить погоду из Open-Meteo">⟳</button>
+          </form>
+          <a class="btn btn-sm btn-ghost" href="{{ url_for('admin_city_form', city_id=r.id) }}">Изменить</a>
+          <form method="post" action="{{ url_for('admin_city_delete', city_id=r.id) }}" data-confirm="Удалить город «{{ r.name }}» вместе с погодой и прогнозами?">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+          </form>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="muted">Городов не найдено.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

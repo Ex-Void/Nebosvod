@@ -1,0 +1,51 @@
+{% extends "admin/layout.html" %}
+{% block title %}Обзор{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>Обзор</h1>
+  <div class="actions">
+    <form method="post" action="{{ url_for('admin_refresh') }}" data-loading>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-primary" type="submit">⟳ Обновить погоду из интернета</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_demo') }}" data-confirm="Перезаписать текущую погоду и прогноз всех городов демо-данными?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-ghost" type="submit">Сгенерировать демо-данные</button>
+    </form>
+  </div>
+</div>
+
+<div class="stats">
+  <a class="stat glass stagger" style="--i:0" href="{{ url_for('admin_cities') }}"><b data-count="{{ stats.cities }}">{{ stats.cities }}</b><span>городов ({{ stats.active }} на сайте)</span></a>
+  <a class="stat glass stagger" style="--i:1" href="{{ url_for('admin_forecasts') }}"><b data-count="{{ stats.forecasts }}">{{ stats.forecasts }}</b><span>записей прогноза</span></a>
+  <a class="stat glass stagger" style="--i:2" href="{{ url_for('admin_feedback') }}"><b data-count="{{ stats.feedback }}">{{ stats.feedback }}</b><span>сообщений ({{ stats.unread }} новых)</span></a>
+  <a class="stat glass stagger" style="--i:3" href="{{ url_for('admin_users') }}"><b data-count="{{ stats.users }}">{{ stats.users }}</b><span>администраторов</span></a>
+</div>
+
+<div class="two-col">
+  <section class="glass panel reveal">
+    <h2>Крайние значения</h2>
+    {% if coldest %}
+    <div class="extremes">
+      <div class="ext ext-cold"><span class="muted small">Холоднее всего</span><b>{{ coldest.temperature|temp }}</b><span>{{ coldest.name }}</span></div>
+      <div class="ext ext-warm"><span class="muted small">Теплее всего</span><b>{{ warmest.temperature|temp }}</b><span>{{ warmest.name }}</span></div>
+    </div>
+    {% else %}<p class="muted">Нет данных.</p>{% endif %}
+    <h2 class="mt">Новые сообщения</h2>
+    <ul class="list">
+      {% for f in feedback %}
+        <li class="{{ 'unread' if not f.is_read }}"><b>{{ f.name }}</b> <span class="muted small">{{ f.created_at|dt }}</span><br><span class="clip">{{ f.message }}</span></li>
+      {% else %}<li class="muted">Сообщений нет.</li>{% endfor %}
+    </ul>
+  </section>
+  <section class="glass panel reveal">
+    <h2>Последние действия</h2>
+    <ul class="timeline">
+      {% for r in log_rows %}
+        <li><span class="dot"></span><div><b>{{ r.action }}</b><span class="muted small">{{ r.username }} · {{ r.created_at|dt }}</span></div></li>
+      {% else %}<li class="muted">Журнал пуст.</li>{% endfor %}
+    </ul>
+    <a class="link-arrow" href="{{ url_for('admin_log') }}">Весь журнал →</a>
+  </section>
+</div>
+{% endblock %}

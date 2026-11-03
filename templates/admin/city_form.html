@@ -1,0 +1,45 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ "Изменить город" if city else "Новый город" }}{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>{{ "Город «" ~ city.name ~ "»" if city else "Новый город" }}</h1>
+  <a class="btn btn-ghost" href="{{ url_for('admin_cities') }}">← К списку</a>
+</div>
+<section class="glass panel form-card reveal">
+  <form method="post" class="form" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="field-row">
+      <div class="field {{ 'has-error' if errors.name }}">
+        <input id="c-name" name="name" value="{{ data.name or '' }}" placeholder=" " required>
+        <label for="c-name">Название</label>
+        <span class="field-error">{{ errors.name }}</span>
+      </div>
+      <button type="button" class="btn btn-ghost" id="geocode-btn" data-url="{{ url_for('admin_geocode') }}">Найти координаты</button>
+    </div>
+    <div class="geo-results" id="geo-results"></div>
+    <div class="field">
+      <input id="c-country" name="country" value="{{ data.country or '' }}" placeholder=" ">
+      <label for="c-country">Страна</label>
+    </div>
+    <div class="grid-2">
+      <div class="field {{ 'has-error' if errors.latitude }}">
+        <input id="c-lat" name="latitude" value="{{ data.latitude if data.latitude is not none else '' }}" placeholder=" " inputmode="decimal">
+        <label for="c-lat">Широта</label>
+        <span class="field-error">{{ errors.latitude }}</span>
+      </div>
+      <div class="field {{ 'has-error' if errors.longitude }}">
+        <input id="c-lon" name="longitude" value="{{ data.longitude if data.longitude is not none else '' }}" placeholder=" " inputmode="decimal">
+        <label for="c-lon">Долгота</label>
+        <span class="field-error">{{ errors.longitude }}</span>
+      </div>
+    </div>
+    <div class="field">
+      <textarea id="c-descr" name="description" rows="3" placeholder=" ">{{ data.description or '' }}</textarea>
+      <label for="c-descr">Описание</label>
+    </div>
+    <label class="check-row"><input type="checkbox" name="is_active" value="1" {{ "checked" if data.is_active }}> Показывать на сайте</label>
+    {% if not city %}<p class="muted small">После добавления сайт попробует загрузить погоду из интернета; если связи нет — заполнит демо-данные, которые можно отредактировать.</p>{% endif %}
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Города{% endblock %}
+{% block sky %}partly{% endblock %}
+{% block content %}
+<section class="page-head reveal">
+  <h1>Погода в городах</h1>
+  <div class="toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="search" id="city-search" placeholder="Найти город…" autocomplete="off">
+    </div>
+    <div class="seg" id="city-sort">
+      <button type="button" class="active" data-sort="name">А–Я</button>
+      <button type="button" data-sort="warm">Теплее</button>
+      <button type="button" data-sort="cold">Холоднее</button>
+    </div>
+  </div>
+</section>
+
+<section class="city-grid" id="city-grid">
+  {% for c in cities %}
+  <a class="city-card glass stagger cond-{{ c.condition or 'none' }} {{ 'selected' if selected == c.id|string }}"
+     href="{{ url_for('index', city=c.id) }}" style="--i: {{ loop.index0 }}"
+     data-name="{{ c.name|lower }}" data-temp="{{ c.temperature if c.temperature is not none else -999 }}">
+    <div class="city-card-top">
+      <div>
+        <h3>{{ c.name }}</h3>
+        <span class="muted small">{{ c.country }}</span>
+      </div>
+      {{ icon(c.condition or "cloudy", 60) }}
+    </div>
+    {% if c.temperature is not none %}
+      <div class="city-temp">{{ c.temperature|temp }}</div>
+      <div class="muted small">{{ CONDITIONS[c.condition] }} · 💧 {{ c.humidity }}% · 🌬 {{ c.wind_speed }} м/с</div>
+    {% else %}
+      <div class="muted">Нет данных</div>
+    {% endif %}
+    <span class="city-go">Подробнее →</span>
+  </a>
+  {% endfor %}
+</section>
+<p class="glass empty hidden" id="no-cities">Ничего не найдено 🌫</p>
+{% endblock %}

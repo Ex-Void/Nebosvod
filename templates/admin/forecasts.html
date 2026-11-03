@@ -1,0 +1,43 @@
+{% extends "admin/layout.html" %}
+{% block title %}Прогнозы{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>Прогнозы</h1>
+  <div class="actions">
+    <form method="get" class="inline-search">
+      <select name="city" onchange="this.form.submit()">
+        {% for c in cities %}<option value="{{ c.id }}" {{ "selected" if c.id == city_id }}>{{ c.name }}</option>{% endfor %}
+      </select>
+      <label class="check-row small"><input type="checkbox" name="past" value="1" {{ "checked" if show_past }} onchange="this.form.submit()"> прошедшие дни</label>
+    </form>
+    {% if city_id %}<a class="btn btn-primary" href="{{ url_for('admin_forecast_form', city=city_id) }}">+ Добавить день</a>{% endif %}
+  </div>
+</div>
+<section class="glass panel reveal">
+  <div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Дата</th><th>Состояние</th><th>Мин.</th><th>Макс.</th><th>Осадки</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="stagger {{ 'dim' if r.forecast_date < today.isoformat() }}" style="--i: {{ loop.index0 }}">
+        <td><b>{{ r.forecast_date|day_month }}</b> <span class="muted small">{{ r.forecast_date|weekday_short }}</span></td>
+        <td><span class="cell-icon">{{ icon(r.condition, 28) }}</span> {{ CONDITIONS[r.condition] }}</td>
+        <td>{{ r.temp_min|temp }}</td>
+        <td><b>{{ r.temp_max|temp }}</b></td>
+        <td><span class="mini-bar"><span style="width: {{ r.precipitation }}%"></span></span> {{ r.precipitation }}%</td>
+        <td class="row-actions">
+          <a class="btn btn-sm btn-ghost" href="{{ url_for('admin_forecast_form', fc_id=r.id) }}">Изменить</a>
+          <form method="post" action="{{ url_for('admin_forecast_delete', fc_id=r.id) }}" data-confirm="Удалить прогноз на {{ r.forecast_date|day_month }}?">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+          </form>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="muted">Нет записей прогноза.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

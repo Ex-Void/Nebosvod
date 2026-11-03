@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Ошибка {{ code }}{% endblock %}
+{% block sky %}fog{% endblock %}
+{% block content %}
+<section class="glass empty error-page reveal">
+  {{ icon("fog", 140, "float") }}
+  <h1>{{ code }}</h1>
+  <p>{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('index') }}">На главную</a>
+</section>
+{% endblock %}

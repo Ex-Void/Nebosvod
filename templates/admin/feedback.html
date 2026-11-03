@@ -1,0 +1,28 @@
+{% extends "admin/layout.html" %}
+{% block title %}Сообщения{% endblock %}
+{% block admin %}
+<div class="admin-head reveal"><h1>Сообщения посетителей</h1></div>
+<section class="messages">
+  {% for r in rows %}
+  <article class="message glass stagger {{ 'unread' if not r.is_read }}" style="--i: {{ loop.index0 }}">
+    <header>
+      <div><b>{{ r.name }}</b> <a class="muted small" href="mailto:{{ r.email }}">{{ r.email }}</a></div>
+      <span class="muted small">{{ r.created_at|dt }}</span>
+    </header>
+    <p>{{ r.message }}</p>
+    <footer class="row-actions">
+      <form method="post" action="{{ url_for('admin_feedback_read', fb_id=r.id) }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-ghost" type="submit">{{ "Отметить непрочитанным" if r.is_read else "✓ Прочитано" }}</button>
+      </form>
+      <form method="post" action="{{ url_for('admin_feedback_delete', fb_id=r.id) }}" data-confirm="Удалить сообщение от {{ r.name }}?">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+      </form>
+    </footer>
+  </article>
+  {% else %}
+  <p class="glass panel muted">Сообщений пока нет.</p>
+  {% endfor %}
+</section>
+{% endblock %}

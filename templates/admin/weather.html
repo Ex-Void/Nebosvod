@@ -1,0 +1,39 @@
+{% extends "admin/layout.html" %}
+{% block title %}Текущая погода{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>Текущая погода</h1>
+  <form method="post" action="{{ url_for('admin_refresh') }}" data-loading>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="back" value="{{ url_for('admin_weather') }}">
+    <button class="btn btn-primary" type="submit">⟳ Обновить все из интернета</button>
+  </form>
+</div>
+<section class="glass panel reveal">
+  <div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Город</th><th>Состояние</th><th>t°</th><th>Ощущ.</th><th>Влажн.</th><th>Давл.</th><th>Ветер</th><th>Источник</th><th>Обновлено</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="stagger {{ 'dim' if not r.is_active }}" style="--i: {{ loop.index0 }}">
+        <td><b>{{ r.name }}</b></td>
+        {% if r.temperature is not none %}
+        <td><span class="cell-icon">{{ icon(r.condition, 28) }}</span> {{ CONDITIONS[r.condition] }}</td>
+        <td><b>{{ r.temperature|temp }}</b></td>
+        <td>{{ r.feels_like|temp }}</td>
+        <td>{{ r.humidity }}%</td>
+        <td>{{ r.pressure }}</td>
+        <td>{{ r.wind_speed }} м/с</td>
+        <td><span class="pill pill-{{ r.source }}">{{ SOURCES.get(r.source, r.source) }}</span></td>
+        <td class="small muted">{{ r.updated_at|dt }}</td>
+        {% else %}
+        <td colspan="8" class="muted">нет данных</td>
+        {% endif %}
+        <td><a class="btn btn-sm btn-ghost" href="{{ url_for('admin_weather_edit', city_id=r.id) }}">Изменить</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

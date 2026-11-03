@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Прогноз на неделю{% endblock %}
+{% block sky %}{{ current.condition if current else "cloudy" }}{% endblock %}
+{% block content %}
+{% if not city %}
+  <section class="glass empty reveal"><h1>Нет городов</h1></section>
+{% else %}
+<section class="page-head reveal">
+  <h1>Прогноз на 7 дней</h1>
+  <div class="chips" role="tablist" aria-label="Выбор города">
+    {% for c in cities %}
+      <a class="chip {{ 'active' if c.id == city.id }}" href="{{ url_for('forecast_page', city=c.id) }}">{{ c.name }}</a>
+    {% endfor %}
+  </div>
+</section>
+
+{% if forecast %}
+<section class="week">
+  {% for f in forecast %}
+  <article class="fcard glass stagger {{ 'today' if loop.first }}" style="--i: {{ loop.index0 }}" tabindex="0">
+    <header>
+      <span class="day-name">{{ f.forecast_date|day_label }}</span>
+      <span class="muted small">{{ f.forecast_date|day_month }}</span>
+    </header>
+    {{ icon(f.condition, 72) }}
+    <p class="fcard-cond">{{ CONDITIONS[f.condition] }}</p>
+    <p class="fcard-temps"><b>{{ f.temp_max|temp }}</b><span class="muted">{{ f.temp_min|temp }}</span></p>
+    <div class="precip" title="Вероятность осадков">
+      <span class="precip-bar"><span style="--w: {{ f.precipitation }}%"></span></span>
+      <span class="small">💧 {{ f.precipitation }}%</span>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="glass chart-card reveal">
+  <div class="section-head">
+    <h2>Температура и осадки · {{ city.name }}</h2>
+    <div class="legend">
+      <span><i class="lg lg-max"></i>максимум</span>
+      <span><i class="lg lg-min"></i>минимум</span>
+      <span><i class="lg lg-pr"></i>осадки, %</span>
+    </div>
+  </div>
+  <div class="chart-wrap">
+    <canvas id="temp-chart" height="300"></canvas>
+    <div class="chart-tip" id="chart-tip"></div>
+  </div>
+</section>
+{% else %}
+<section class="glass empty reveal">
+  <h2>Прогноз для города «{{ city.name }}» пока не заполнен</h2>
+  <p class="muted">Администратор может добавить его в разделе «Прогнозы».</p>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if data %}<script id="weather-data" type="application/json">{{ data|tojson }}</script>{% endif %}
+<script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ "Изменить прогноз" if row else "Новый прогноз" }}{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>{{ "Изменить прогноз" if row else "Новый день прогноза" }}</h1>
+  <a class="btn btn-ghost" href="{{ url_for('admin_forecasts', city=data.city_id) }}">← Назад</a>
+</div>
+<section class="glass panel form-card reveal">
+  <form method="post" class="form" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="grid-2">
+      <div class="field field-static {{ 'has-error' if errors.city_id }}">
+        <select id="fc-city" name="city_id">
+          {% for c in cities %}<option value="{{ c.id }}" {{ "selected" if c.id == data.city_id }}>{{ c.name }}</option>{% endfor %}
+        </select>
+        <label for="fc-city">Город</label>
+        <span class="field-error">{{ errors.city_id }}</span>
+      </div>
+      <div class="field field-static {{ 'has-error' if errors.forecast_date }}">
+        <input id="fc-date" type="date" name="forecast_date" value="{{ data.forecast_date }}">
+        <label for="fc-date">Дата</label>
+        <span class="field-error">{{ errors.forecast_date }}</span>
+      </div>
+    </div>
+    <p class="muted small">Состояние погоды</p>
+    <div class="cond-picker {{ 'has-error' if errors.condition }}">
+      {% for key, label in CONDITIONS.items() %}
+        <label class="cond-opt">
+          <input type="radio" name="condition" value="{{ key }}" {{ "checked" if data.condition == key }}>
+          <span>{{ icon(key, 44) }}<small>{{ label }}</small></span>
+        </label>
+      {% endfor %}
+    </div>
+    <div class="grid-3">
+      {% for key, label in [("temp_min", "Минимум, °C"), ("temp_max", "Максимум, °C"), ("precipitation", "Осадки, %")] %}
+      <div class="field {{ 'has-error' if errors[key] }}">
+        <input id="fc-{{ key }}" name="{{ key }}" value="{{ data[key] if data[key] is not none else '' }}" placeholder=" " inputmode="decimal">
+        <label for="fc-{{ key }}">{{ label }}</label>
+        <span class="field-error">{{ errors[key] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+  </form>
+</section>
+{% endblock %}

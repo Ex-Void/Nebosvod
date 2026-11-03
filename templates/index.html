@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Погода сейчас{% endblock %}
+{% block sky %}{{ current.condition if current else "cloudy" }}{% endblock %}
+{% block content %}
+{% if not city %}
+  <section class="glass empty reveal">
+    <h1>Нет городов</h1>
+    <p>Добавьте город в <a href="{{ url_for('admin_cities') }}">панели администратора</a>.</p>
+  </section>
+{% else %}
+<section class="hero" id="now">
+  <div class="hero-main glass reveal">
+    <div class="city-picker">
+      <label for="city-select" class="muted">Город</label>
+      <div class="select-wrap">
+        <select id="city-select" data-switch-city>
+          {% for c in cities %}<option value="{{ c.id }}" {{ "selected" if c.id == city.id }}>{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="now-grid" data-swap>
+      <div>
+        <h1 class="city-name" data-bind="city">{{ city.name }}</h1>
+        <p class="muted city-descr" data-bind="description">{{ city.description }}</p>
+        {% if current %}
+        <div class="big-temp" data-count="{{ current.temperature }}" data-bind="temp">{{ current.temperature|temp }}</div>
+        <p class="condition" data-bind="condition">{{ CONDITIONS[current.condition] }}</p>
+        <p class="muted">Ощущается как <b data-bind="feels">{{ current.feels_like|temp }}</b></p>
+        {% else %}
+        <p class="condition">Нет данных о текущей погоде</p>
+        {% endif %}
+      </div>
+      <div class="hero-icon" data-bind="icon">{{ icon(current.condition if current else "cloudy", 190, "float") }}</div>
+    </div>
+    {% if current %}
+    <p class="updated muted">Обновлено <span data-bind="updated">{{ current.updated_at|dt }}</span> · источник: <span data-bind="source">{{ SOURCES.get(current.source, current.source) }}</span></p>
+    {% endif %}
+  </div>
+
+  {% if current %}
+  <div class="tiles">
+    <div class="tile glass reveal">
+      <span class="tile-label">Влажность</span>
+      <div class="ring" style="--p: {{ current.humidity }}" data-ring>
+        <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="50"/><circle class="ring-fg" cx="60" cy="60" r="50"/></svg>
+        <span class="ring-value"><b data-bind="humidity" data-count="{{ current.humidity }}">{{ current.humidity }}</b>%</span>
+      </div>
+    </div>
+    <div class="tile glass reveal">
+      <span class="tile-label">Ветер</span>
+      <div class="wind" data-bind-wind style="--speed: {{ [8 / (current.wind_speed + 0.5), 0.25]|max }}s">
+        <svg viewBox="0 0 100 110" class="turbine">
+          <line x1="50" y1="50" x2="50" y2="108" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+          <g class="blades"><path d="M50 50 L46 12 Q50 6 54 12 Z"/><path d="M50 50 L46 12 Q50 6 54 12 Z" transform="rotate(120 50 50)"/><path d="M50 50 L46 12 Q50 6 54 12 Z" transform="rotate(240 50 50)"/><circle cx="50" cy="50" r="5"/></g>
+        </svg>
+        <span class="tile-value"><b data-bind="wind" data-count="{{ current.wind_speed }}" data-decimals="1">{{ current.wind_speed }}</b> м/с</span>
+      </div>
+    </div>
+    <div class="tile glass reveal">
+      <span class="tile-label">Давление</span>
+      <div class="gauge" style="--a: {{ ((current.pressure - 720) / 60 * 180 - 90)|round }}deg" data-gauge>
+        <svg viewBox="0 0 120 70"><path class="gauge-bg" d="M10 62 A50 50 0 0 1 110 62"/><line class="gauge-needle" x1="60" y1="62" x2="60" y2="20"/><circle cx="60" cy="62" r="5" fill="currentColor"/></svg>
+        <span class="tile-value"><b data-bind="pressure" data-count="{{ current.pressure }}">{{ current.pressure }}</b> мм рт. ст.</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<section class="glass strip reveal">
+  <div class="section-head">
+    <h2>Ближайшие дни</h2>
+    <a class="link-arrow" href="{{ url_for('forecast_page') }}">Подробный прогноз →</a>
+  </div>
+  <div class="days" data-bind="days">
+    {% for f in forecast[:5] %}
+    <div class="day stagger" style="--i: {{ loop.index0 }}">
+      <span class="day-name">{{ f.forecast_date|day_label }}</span>
+      <span class="muted small">{{ f.forecast_date|day_month }}</span>
+      {{ icon(f.condition, 54) }}
+      <span class="day-temps"><b>{{ f.temp_max|temp }}</b> <span class="muted">{{ f.temp_min|temp }}</span></span>
+    </div>
+    {% else %}
+    <p class="muted">Прогноз пока не заполнен.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if data %}<script id="weather-data" type="application/json">{{ data|tojson }}</script>{% endif %}
+{% endblock %}

@@ -1,0 +1,64 @@
+<!doctype html>
+{% from "_icons.html" import icon with context %}
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Небосвод{% endblock %} · Небосвод</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    // день или ночь — по часам пользователя (до отрисовки, чтобы не мигало)
+    (function () { var h = new Date().getHours(); document.documentElement.classList.add(h >= 7 && h < 19 ? "is-day" : "is-night"); })();
+  </script>
+</head>
+<body data-sky="{% block sky %}clear{% endblock %}" class="{% block body_class %}{% endblock %}">
+  <div class="sky" aria-hidden="true">
+    {% for key in ["clear", "partly", "cloudy", "fog", "rain", "snow", "storm", "admin"] %}
+      <div class="sky-layer sky-{{ key }}"></div>
+    {% endfor %}
+    <div class="sky-glow"></div>
+    <canvas id="sky-canvas"></canvas>
+    <div class="flash-overlay"></div>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">
+      <span class="brand-mark">{{ icon("partly", 34) }}</span>
+      <span class="brand-name">Небосвод</span>
+    </a>
+    <nav class="tabs" id="tabs">
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if page == 'now' }}">Сейчас</a>
+      <a href="{{ url_for('forecast_page') }}" class="tab {{ 'active' if page == 'forecast' }}">Прогноз</a>
+      <a href="{{ url_for('cities_page') }}" class="tab {{ 'active' if page == 'cities' }}">Города</a>
+      <a href="{{ url_for('feedback_page') }}" class="tab {{ 'active' if page == 'feedback' }}">Обратная связь</a>
+      <a href="{{ url_for('admin_dashboard') }}" class="tab tab-admin {{ 'active' if page == 'admin' }}">
+        Админ{% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}
+      </a>
+      <span class="tab-indicator" aria-hidden="true"></span>
+    </nav>
+  </header>
+
+  <div class="toasts" id="toasts">
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="toast toast-{{ category }}" role="status"><span>{{ message }}</span><button type="button" class="toast-close" aria-label="Закрыть">×</button></div>
+    {% endfor %}
+  </div>
+
+  <main class="page">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <span>«Небосвод» — учебный проект · Flask + SQLite</span>
+    <span>{{ today.strftime("%d.%m.%Y") }}</span>
+  </footer>
+
+  {# шаблоны иконок для смены города без перезагрузки #}
+  {% for key in CONDITIONS %}<template id="icon-{{ key }}">{{ icon(key, 64) }}</template>{% endfor %}
+
+  <script src="{{ url_for('static', filename='js/sky.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

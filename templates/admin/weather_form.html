@@ -1,0 +1,34 @@
+{% extends "admin/layout.html" %}
+{% block title %}Погода: {{ city.name }}{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>Текущая погода · {{ city.name }}</h1>
+  <a class="btn btn-ghost" href="{{ url_for('admin_weather') }}">← Назад</a>
+</div>
+<section class="glass panel form-card reveal">
+  <form method="post" class="form" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <p class="muted small">Состояние погоды</p>
+    <div class="cond-picker {{ 'has-error' if errors.condition }}">
+      {% for key, label in CONDITIONS.items() %}
+        <label class="cond-opt">
+          <input type="radio" name="condition" value="{{ key }}" {{ "checked" if data.condition == key }}>
+          <span>{{ icon(key, 44) }}<small>{{ label }}</small></span>
+        </label>
+      {% endfor %}
+    </div>
+    <div class="grid-3">
+      {% for key, label, unit in [("temperature", "Температура", "°C"), ("feels_like", "Ощущается как", "°C"),
+                                   ("humidity", "Влажность", "%"), ("pressure", "Давление", "мм рт. ст."),
+                                   ("wind_speed", "Ветер", "м/с")] %}
+      <div class="field {{ 'has-error' if errors[key] }}">
+        <input id="w-{{ key }}" name="{{ key }}" value="{{ data[key] if data[key] is not none else '' }}" placeholder=" " inputmode="decimal">
+        <label for="w-{{ key }}">{{ label }}, {{ unit }}</label>
+        <span class="field-error">{{ errors[key] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+  </form>
+</section>
+{% endblock %}

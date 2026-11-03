@@ -1,0 +1,43 @@
+{% extends "admin/layout.html" %}
+{% block title %}База данных{% endblock %}
+{% block admin %}
+<div class="admin-head reveal">
+  <h1>База данных</h1>
+  <a class="btn btn-primary" href="{{ url_for('admin_backup') }}">⬇ Скачать резервную копию (.db)</a>
+</div>
+<p class="muted reveal">Файл <code>weather.db</code> · SQLite · {{ db_size }} КБ</p>
+
+<div class="tables-grid">
+  {% for t in tables %}
+  <details class="glass db-table stagger" style="--i: {{ loop.index0 }}">
+    <summary><b>{{ t.name }}</b><span class="pill">{{ t.count }} зап.</span></summary>
+    <ul>
+      {% for c in t.columns %}<li><code>{{ c.name }}</code> <span class="muted small">{{ c.type }}{{ " · PK" if c.pk }}{{ " · NOT NULL" if c.notnull and not c.pk }}</span></li>{% endfor %}
+    </ul>
+    <a class="small link-arrow" href="{{ url_for('admin_database', q='SELECT * FROM ' ~ t.name ~ ' LIMIT 100;') }}">Открыть в консоли →</a>
+  </details>
+  {% endfor %}
+</div>
+
+<section class="glass panel reveal">
+  <h2>SQL-консоль <span class="muted small">(только чтение)</span></h2>
+  <div class="chips small-chips">
+    {% for title, sql in examples %}<button type="button" class="chip" data-sql="{{ sql }}">{{ title }}</button>{% endfor %}
+  </div>
+  <form method="post" class="form" id="sql-form">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <textarea name="query" class="code" rows="6" spellcheck="false">{{ query }}</textarea>
+    <button class="btn btn-primary" type="submit">▶ Выполнить <span class="muted small">(Ctrl+Enter)</span></button>
+  </form>
+  {% if error %}<p class="alert alert-error">{{ error }}</p>{% endif %}
+  {% if result %}
+    <p class="muted small">Строк: {{ result.rows|length }}{{ " (показаны первые 500)" if result.limited }}</p>
+    <div class="table-wrap result">
+      <table class="table">
+        <thead><tr>{% for c in result.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for row in result.rows %}<tr>{% for v in row %}<td>{{ "NULL" if v is none else v }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

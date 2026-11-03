@@ -1,0 +1,17 @@
+{% extends "admin/layout.html" %}
+{% block title %}Журнал{% endblock %}
+{% block admin %}
+<div class="admin-head reveal"><h1>Журнал действий</h1></div>
+<section class="glass panel reveal">
+  <table class="table">
+    <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="stagger" style="--i: {{ [loop.index0, 20]|min }}"><td class="small muted">{{ r.created_at|dt }}</td><td>{{ r.username }}</td><td>{{ r.action }}</td></tr>
+    {% else %}
+      <tr><td colspan="3" class="muted">Журнал пуст.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
